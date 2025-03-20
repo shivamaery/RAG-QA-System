@@ -16,7 +16,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # which in tur makes the context window very small)
 
 # Make sure to put the appropriate path
-input_dir = r""
+input_dir = r"test_data"
 
 documents = SimpleDirectoryReader(input_dir=input_dir).load_data()
 
