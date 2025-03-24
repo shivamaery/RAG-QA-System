@@ -27,3 +27,11 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 ```bash
 pip install -qU langchain_community langchain-pymupdf4llm
 ```
+
+```bash
+pip install accelerate
+```
+
+```bash
+pip install -U bitsandbytes
+```
