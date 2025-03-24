@@ -1,33 +1,44 @@
-from llama_index.core import SimpleDirectoryReader
 from llama_index.core import VectorStoreIndex
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-
+from langchain_community.document_loaders import FileSystemBlobLoader
+from langchain_community.document_loaders.generic import GenericLoader
+from langchain_pymupdf4llm import PyMuPDF4LLMParser
 
 # Set quantization config
-quantization_config = BitsAndBytesConfig(load_in_8bit=True, llm_int8_enable_fp32_cpu_offload=True)
+quantization_config = BitsAndBytesConfig(load_in_4bit=True, llm_int8_enable_fp32_cpu_offload=True)
 # Check if GPU is available otherwise we run it on the cpu
 # My initial test did not include this so I got to 
 # 85% CPU usage and 17GB of RAM approximately being used
 # With CUDA toolkit installed and cuda computing enabled
 # on an RTX 4070Ti RAM usage was in the ballpark of 8GB while 
 # GPU memory was almost saturated at 11.6/12GB
-device = "cuda" if torch.cuda.is_available() else "cpu"
+#device = "cuda" if torch.cuda.is_available() else "cpu"
 # Load PDF (will need to find a better way. Something is not working with the pdf parsing, 
 # which in tur makes the context window very small)
 
 # Make sure to put the appropriate path
-input_dir = r"test_data"
+dir_path = "test_data"
 
-documents = SimpleDirectoryReader(input_dir=input_dir).load_data()
+loader = GenericLoader(
+    blob_loader=FileSystemBlobLoader(
+        path=dir_path,
+        glob="*.pdf",
+    ),
+    blob_parser=PyMuPDF4LLMParser(mode="single"),
+    
+)
+docs = loader.load()
+for doc in docs:
+    print(doc.metadata)
 
 # print(documents[0].text[:15000])  # Debug, checking document content
 
 # embedding
 embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-mpnet-base-v2")
 # vector index
-index = VectorStoreIndex.from_documents(documents, embed_model=embed_model)
+index = VectorStoreIndex.from_documents(docs, embed_model=embed_model)
 
 # persist index into a json
 index.storage_context.persist(persist_dir="./index_storage")
@@ -35,7 +46,7 @@ index.storage_context.persist(persist_dir="./index_storage")
 model_name = "microsoft/phi-3.5-mini-instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 # Add quantization config and torch type for less RAM usage
-model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quantization_config, torch_dtype=torch.float16, device_map="cuda:0")
+model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quantization_config, torch_dtype="auto", device_map="cuda:0")
 
 # Get memory footprint
 print("Memory Used: ", model.get_memory_footprint())

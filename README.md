@@ -35,3 +35,12 @@ pip install accelerate
 ```bash
 pip install -U bitsandbytes
 ```
+
+```bash
+pip install chromadb
+```
+
+```bash
+pip install -qU langchain-chroma
+
+```
