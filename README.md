@@ -44,3 +44,10 @@ pip install chromadb
 pip install -qU langchain-chroma
 
 ```
+
+```bash
+pip install langchain
+```
+```bash
+pip install -qU langchain-huggingface
+```
