@@ -19,7 +19,7 @@ def load_chunk_pdfs():
             loader = PyMuPDF4LLMLoader(pdf, mode="single",table_strategy='lines_strict')
             doc = loader.load()
             docs.extend(doc)
-    text_splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=10)
+    text_splitter = MarkdownTextSplitter(chunk_size=1500, chunk_overlap=150)
     chunked_docs = text_splitter.split_documents(docs)
     
     return chunked_docs
@@ -36,16 +36,29 @@ def embedding_chroma(client, chunked_docs):
     return collection, vector_store_from_client
 
 # Query vector store
-def query_vector_store(query, vector_store):
-    results = vector_store.similarity_search(
-    f"{query}",
-    k=3)
+def query_vector_store(query, vector_store, chunked_docs):
+    # Similarity searching, not much diversity from my tests
+    # results = vector_store.similarity_search_with_relevance_scores(
+    # f"{query}",
+    # k=4,
+    # score_threshold=0.5
+    # )
+    # MMR testing, optimizes both similarity and diversity
+    print(f"How many docs we have: {len(chunked_docs)}\n")
+    results = vector_store.max_marginal_relevance_search(f"{query}",fetch_k=len(chunked_docs), k=5,lambda_mult=0)
     for res in results:
-        print(f"QUERY RESULT: \n{res.page_content} \n{res.metadata}")
+        print(f"Query Result:\n\n {res.page_content} \n [{res.metadata}]")
+    
 
 if __name__ == '__main__':
+    # Read PDFs
     chunked_docs = load_chunk_pdfs()
+    # Start persistent DB
     client = chromadb.PersistentClient(path="./test_db")
+    # Perform embeddings of input PDFs
     collection, vector_store_from_client = embedding_chroma(client, chunked_docs)
-    query_vector_store("Finite Element", vector_store_from_client)
-    #chroma_query(collection)
+    # Run query
+    query = "What is the definition of a Finite Element"
+    query_vector_store(query, vector_store_from_client, chunked_docs)
+    retriever = vector_store_from_client.as_retriever(search_type="mmr", search_kwargs={'lambda_mult': 0, 'k': 4, 'fetch_k' : len(chunked_docs)})
+
