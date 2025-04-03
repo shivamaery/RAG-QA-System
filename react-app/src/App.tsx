@@ -1,4 +1,6 @@
 import InputBox from "./InputBox";
+import Chat from "./Chat";
+import "./App.css";
 
 function App() {
   return (
