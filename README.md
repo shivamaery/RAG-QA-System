@@ -51,3 +51,11 @@ pip install langchain
 ```bash
 pip install -qU langchain-huggingface
 ```
+
+```bash
+pip install -qqq accelerate transformers auto-gptq optimum
+```
+
+```bash
+pip install pipeline
+```
