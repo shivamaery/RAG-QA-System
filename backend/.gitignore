@@ -2,3 +2,5 @@ test_data/
 index_storage/
 test_data2/
 test_db/
+LoRA-Tuning-output/
+LoRA-logs/
