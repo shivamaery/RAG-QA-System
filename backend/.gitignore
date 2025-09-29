@@ -1,6 +1,11 @@
-test_data/
 index_storage/
-test_data2/
-test_db/
+data/test_data
 LoRA-Tuning-output/
 LoRA-logs/
+.venv/
+venv/
+env/
+*.pyc
+*.bin
+*.sqlite3
+*.pickle

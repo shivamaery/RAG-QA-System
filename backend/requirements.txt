@@ -1,0 +1,15 @@
+pymupdf4llm
+transformers
+llama-index
+llama-index-embeddings-huggingface
+langchain
+langchain-community
+langchain-pymupdf4llm
+langchain-chroma
+langchain-huggingface
+accelerate
+optimum
+chromadb
+langchain_community
+bitsandbytes
+
