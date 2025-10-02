@@ -21,8 +21,7 @@ def main():
 
     if args.query:
         _, _, llm = load_phi3_model()
-        k = 4
-        qa = build_retrieval_qa(llm, k)
+        qa = build_retrieval_qa(llm)
         result = qa(args.query)
         print("=== Result ===")
         print(result)
