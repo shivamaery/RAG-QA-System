@@ -33,7 +33,7 @@ def load_phi3_model(model_name: str = config.MODEL_NAME):
             quantization_config=bnb_config,
             device_map="auto",
             torch_dtype="auto",
-            trust_remote_code=True,
+            trust_remote_code=False,
             low_cpu_mem_usage=True,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -49,8 +49,7 @@ def load_phi3_model(model_name: str = config.MODEL_NAME):
         max_new_tokens=config.MAX_NEW_TOKENS,
         temperature=config.TEMPERATURE,
         top_p=config.TOP_P,
-        repetition_penalty=config.REPETITION_PENALTY,
-        device=0 if "cuda" in device else -1,
+        repetition_penalty=config.REPETITION_PENALTY
     )
     llm = HuggingFacePipeline(pipeline=pipe)
     return model, tokenizer, llm

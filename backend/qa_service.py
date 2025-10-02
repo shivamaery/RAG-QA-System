@@ -10,7 +10,19 @@ import config
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-QNA_PROMPT = """You have been provided with the context and a question. Answer using only the context. If the answer is not in the context, respond "I don't know." Context: {context}\n\nQuestion: {question}"""
+QNA_PROMPT = """
+
+You are given a **context** (relevant text) and a **question**.  
+Answer *only* using the information in the context.  
+If the context doesn’t contain the answer, respond exactly: “I don't know.”  
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:"""
 
 def get_vector_store():
     client = chromadb.PersistentClient(path=config.CHROMA_PERSIST_DIR)
