@@ -7,6 +7,5 @@ venv/
 env/
 *.pyc
 *.bin
-*.sqlite3
 *.pickle
 __pycache__/
