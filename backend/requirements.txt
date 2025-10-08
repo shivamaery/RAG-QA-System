@@ -12,4 +12,4 @@ optimum
 chromadb
 langchain_community
 bitsandbytes
-
+markdown2
