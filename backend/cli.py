@@ -4,47 +4,38 @@ import logging
 from pathlib import Path
 from model import load_phi3_model
 from qa_service import build_retrieval_qa
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+# Create a single console instance
+console = Console()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from datetime import datetime
-from pathlib import Path
+def print_result(query: str, answer: str, sources: list):
+    """Pretty-print the QA result using Rich panels and tables."""
+    # Query panel
+    console.print(Panel(f"[bold blue]{query}[/bold blue]", title="Question", expand=True))
 
-def save_result_to_markdown(query: str, answer: str, sources: list):
-    """
-    Save the Q&A result to a local Markdown file for easy review.
-    Each run is appended as a new section with timestamp and source info.
-    """
-    output_dir = Path("results")
-    output_dir.mkdir(exist_ok=True)
-    output_file = output_dir / "qa_results.md"
+    # Answer panel
+    console.print(Panel(f"[green]{answer or '*(no answer returned)*'}[/green]", title="Answer", expand=True))
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    md_content = [
-        f"## {timestamp}",
-        f"**Query:** {query}",
-        "",
-        f"**Answer:**",
-        f"{answer or '*(no answer returned)*'}",
-        "",
-        "**Sources:**",
-    ]
+    # Sources table
+    table = Table(title="Sources", show_header=True, header_style="bold yellow")
+    table.add_column("#", style="yellow", width=3)
+    table.add_column("PDF File", style="cyan")
 
     if sources:
-        for doc in sources:
-            src = Path(doc.metadata.get("source", "unknown")).name
-            md_content.append(f"- `{src}`")
+        for idx, doc in enumerate(sources, start=1):
+            pdf_name = Path(doc.metadata.get("source", "unknown")).name
+            table.add_row(str(idx), pdf_name)
     else:
-        md_content.append("- *(no sources found)*")
+        table.add_row("-", "*(no sources found)*")
 
-    md_content.append("\n---\n")
+    console.print(table)
 
-    with output_file.open("a", encoding="utf-8") as f:
-        f.write("\n".join(md_content))
-
-    print(f"\nSaved to {output_file.absolute()}")
 
 def main():
     parser = argparse.ArgumentParser()
@@ -61,19 +52,10 @@ def main():
         _, _, llm = load_phi3_model()
         qa = build_retrieval_qa(llm)
         result = qa(args.query)
-        print("=== Result ===")
-        print(result)
         answer = result.get("result") or result.get("answer")
-        print("=== Answer ===")
-        print(answer)
         sources = result.get("source_documents", [])
-        print("\n=== Sources ===")
-        for doc in result.get("source_documents", []):
-             source_path = doc.metadata.get("source", "unknown")
-             pdf_name = Path(source_path).name  # show only the file name
-             print(f"- {pdf_name}")
 
-        save_result_to_markdown(args.query, answer, sources)
+        print_result(args.query, answer, sources)
 
     else:
         parser.print_help()

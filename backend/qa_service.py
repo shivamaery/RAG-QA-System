@@ -12,36 +12,37 @@ logging.basicConfig(level=logging.INFO)
 
 # Prompt for each chunk
 QNA_CHUNK_PROMPT = """
-You are a scholarly, precise, and cautious assistant. Your tone must be formal and academic.
+You are a scholarly, precise, and cautious assistant. Use a formal academic tone.
 
-Extract information from the text below that is directly relevant to potential questions. 
+Task: Using ONLY the text below, extract any facts or statements that directly answer the question.
 Do NOT use external knowledge or invent facts. If the text does not contain enough information to answer, respond exactly:
 "I don't know."
 
-When referencing facts, include the source PDF filename in parentheses after the relevant statement. 
-Ignore any irrelevant text, HTML, or artifacts.
+When you list facts, append the source filename in parentheses immediately after each fact (e.g. (paper.pdf)).
+Do not provide commentary, speculation, or extra wording.
+
+Question:
+{question}
 
 Text:
-{text}
+{context}
 
 Source: {source}
 """
 
 # Prompt to combine all chunk summaries
 QNA_FINAL_PROMPT = """
-You are a scholarly, precise, and cautious assistant. Your tone must be formal and academic.
+You are a scholarly, precise, and cautious assistant. Use a formal academic tone.
 
-Combine the following summarized chunks to answer the question as accurately as possible. 
-Answer ONLY using the information in the summarized chunks. 
-If there is not enough information, respond exactly: "I don't know."
+Combine the following chunk-level extracted facts to answer the question as accurately as possible.
+Answer ONLY using the information in the chunk extracts. If there is not enough information, respond exactly: "I don't know."
 
-Cite each fact with the source PDF filename in parentheses. 
-Do not include any text that is not present in the summaries.
+Cite each fact with the source PDF filename in parentheses. Do not add or invent any text not present in the extracts.
 
 Question:
 {question}
 
-Summaries:
+Chunk-level extracted facts:
 {summaries}
 """
 
@@ -62,9 +63,15 @@ def build_retrieval_qa(llm, k: int = None):
         search_kwargs={
             "k": k or config.NUM_RETRIEVE,
             "fetch_k": 10 * (k or config.NUM_RETRIEVE),
-            "lambda_mult": 0.0
+            "lambda_mult": 0.5
         }
     )
+    
+    map_prompt = PromptTemplate(
+    template=QNA_CHUNK_PROMPT,
+    input_variables=["context", "question", "source"]
+    )
+
 
     final_prompt = PromptTemplate(
         template=QNA_FINAL_PROMPT,
@@ -77,8 +84,11 @@ def build_retrieval_qa(llm, k: int = None):
         chain_type="map_reduce",
         retriever=retriever,
         return_source_documents=True,
-        chain_type_kwargs={"combine_prompt": final_prompt}
+        chain_type_kwargs={
+               "map_prompt": map_prompt,
+               "combine_prompt": final_prompt,
+               "return_intermediate_steps": True}
     )
-
+    logger.info("Initialized RetrievalQA chain successfully.")
     return qa_chain
 
