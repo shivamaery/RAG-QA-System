@@ -1,26 +1,17 @@
 # model.py
 import logging
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain_community.llms import HuggingFacePipeline
-import torch
 import config
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def load_phi3_model(model_name: str = config.MODEL_NAME):
-
-    # 8 Bit quantization
-    bnb_config = BitsAndBytesConfig(
-        load_in_8bit=True,
-    )
-
+def load_phi4_model(model_name: str = config.MODEL_NAME):
     try:
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            quantization_config=bnb_config,
             device_map="auto",
-            dtype="auto",
             trust_remote_code=True,
             low_cpu_mem_usage=True,
         )

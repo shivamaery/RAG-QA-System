@@ -7,7 +7,7 @@ import uuid
 import unicodedata
 from langchain.text_splitter import MarkdownTextSplitter
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_chroma import Chroma
 import chromadb
 
@@ -98,7 +98,7 @@ def add_pdfs_to_collection(client, pdf_paths):
     chunks = split_documents(docs)
 
     logger.info("Embedding and adding documents to Chroma...")
-    embeddings = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
+    embeddings = SentenceTransformerEmbeddings(model_name=config.EMBEDDING_MODEL)
     vector_store = Chroma(
         client=client,
         collection_name=config.CHROMA_COLLECTION_NAME,

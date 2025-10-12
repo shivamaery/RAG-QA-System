@@ -4,14 +4,5 @@
 Running Python Version: 3.11.9
 
 ```bash
-python -m pip install --upgrade pip
+python -m pip install -r requirements.txt 
 ```
-
-```bash
-python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126 
-```
-
-```bash
-python -m pip install -r requirements.txt
-```
-

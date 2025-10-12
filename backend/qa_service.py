@@ -4,7 +4,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 import chromadb
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import SentenceTransformerEmbeddings
 import config
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ Chunk-level extracted facts:
 
 def get_vector_store():
     client = chromadb.PersistentClient(path=config.CHROMA_PERSIST_DIR)
-    embeddings = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
+    embeddings = SentenceTransformerEmbeddings(model_name=config.EMBEDDING_MODEL)
     return Chroma(
         client=client,
         collection_name=config.CHROMA_COLLECTION_NAME,

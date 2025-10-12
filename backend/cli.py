@@ -2,7 +2,7 @@
 import argparse
 import logging
 from pathlib import Path
-from model import load_phi3_model
+from model import load_phi4_model
 from qa_service import build_retrieval_qa
 from rich.console import Console
 from rich.panel import Panel
@@ -49,7 +49,7 @@ def main():
         return
 
     if args.query:
-        _, _, llm = load_phi3_model()
+        _, _, llm = load_phi4_model()
         qa = build_retrieval_qa(llm)
         result = qa(args.query)
         answer = result.get("result") or result.get("answer")
