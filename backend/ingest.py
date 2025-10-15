@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import List
 import re
 import uuid
-
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+import unicodedata
+from langchain.text_splitter import MarkdownTextSplitter
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_chroma import Chroma
 import chromadb
 
@@ -26,9 +26,15 @@ def clean_text(text: str) -> str:
     - Normalize whitespace
     - Remove common page numbers
     """
-    text = re.sub(r"<.*?>", "", text) 
-    text = re.sub(r"\s+", " ", text)   
-    text = re.sub(r"Page \d+ of \d+", "", text, flags=re.IGNORECASE)  
+    # Normalize unicode
+    text = unicodedata.normalize("NFKC", text)
+    # Remove common headers / footers
+    text = re.sub(r"Page\s*\d+(\s*of\s*\d+)?", " ", text, flags=re.IGNORECASE)
+    text = re.sub(r"(?m)^(?:[A-Z][A-Za-z\s,&\-:]{5,100})\s*$", "", text)
+    # Fix hyphenation at line breaks
+    text = re.sub(r"(\w)-\s+(\w)", r"\1\2", text)
+    # Fix whitespace
+    text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 def list_pdfs(path: Path) -> List[Path]:
@@ -56,10 +62,9 @@ def split_documents(docs):
     """
     Split documents into semantic chunks with overlap.
     """
-    splitter = RecursiveCharacterTextSplitter(
+    splitter = MarkdownTextSplitter(
         chunk_size=config.CHUNK_SIZE,
         chunk_overlap=config.CHUNK_OVERLAP,
-        separators=["\n\n", "\n", ".", "!", "?"]
     )
     return splitter.split_documents(docs)
 
@@ -67,6 +72,44 @@ def split_documents(docs):
 def create_or_get_chroma_collection(client: chromadb.Client, name: str):
     # If already exists, get it.
     return client.get_or_create_collection(name=name)
+
+def get_existing_sources(collection):
+    """
+    Return a set of all 'source' filenames already present in the collection.
+    """
+    existing = set()
+    if collection.count() == 0:
+        return existing
+
+    results = collection.get(include=["metadatas"])
+    for meta in results["metadatas"]:
+        if meta and "source" in meta:
+            existing.add(meta["source"])
+    return existing
+
+def add_pdfs_to_collection(client, pdf_paths):
+    """
+    Load, clean, split, and embed a list of PDFs into the Chroma collection.
+    """
+    logger.info("Loading %d PDFs...", len(pdf_paths))
+    docs = load_documents(pdf_paths)
+
+    logger.info("Splitting into chunks...")
+    chunks = split_documents(docs)
+
+    logger.info("Embedding and adding documents to Chroma...")
+    embeddings = SentenceTransformerEmbeddings(model_name=config.EMBEDDING_MODEL)
+    vector_store = Chroma(
+        client=client,
+        collection_name=config.CHROMA_COLLECTION_NAME,
+        embedding_function=embeddings
+    )
+
+    ids = [str(uuid.uuid4()) for _ in chunks]
+    vector_store.add_documents(documents=chunks, ids=ids)
+
+    logger.info("Ingest complete. Added %d chunks from %d PDFs.",
+                len(chunks), len(pdf_paths))
 
 def ingest_all():
     pdfs = list_pdfs(Path(config.DATA_DIR))
@@ -76,32 +119,17 @@ def ingest_all():
 
     client = chromadb.PersistentClient(path=config.CHROMA_PERSIST_DIR)
     collection = create_or_get_chroma_collection(client, config.CHROMA_COLLECTION_NAME)
+    logger.info("Collection '%s' already has %d items", config.CHROMA_COLLECTION_NAME, collection.count())
+    
+    existing_sources = get_existing_sources(collection)
+    new_pdfs = [p for p in pdfs if p.name not in existing_sources]
 
-    # TODO ->add things to collection
-    if collection.count() > 0:
-        logger.info("Collection '%s' already has %d items. Skipping ingest.", 
-                    config.CHROMA_COLLECTION_NAME, collection.count())
+    if not new_pdfs:
+        logger.info("No new PDFs to ingest.")
         return
 
-    logger.info("Loading %d PDFs...", len(pdfs))
-    docs = load_documents(pdfs)
-
-    logger.info("Splitting into chunks...")
-    chunks = split_documents(docs)
-
-    logger.info("Creating embeddings and adding documents to Chroma...")
-    embeddings = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
-    vector_store = Chroma(
-        client=client,
-        collection_name=config.CHROMA_COLLECTION_NAME,
-        embedding_function=embeddings
-    )
-
-    # Use UUIDs as unique IDs for each chunk
-    ids = [str(uuid.uuid4()) for _ in chunks]
-    vector_store.add_documents(documents=chunks, ids=ids)
-
-    logger.info("Ingest complete. Added %d chunks.", len(chunks))
+    logger.info("Found %d new PDFs: %s", len(new_pdfs), [p.name for p in new_pdfs])
+    add_pdfs_to_collection(client, new_pdfs)
 
 
 if __name__ == "__main__":

@@ -1,15 +1,20 @@
-pymupdf4llm
-transformers
-llama-index
-llama-index-embeddings-huggingface
-langchain
-langchain-community
-langchain-pymupdf4llm
-langchain-chroma
-langchain-huggingface
-accelerate
-optimum
-chromadb
-langchain_community
-bitsandbytes
-markdown2
+# Core ML / Transformers stack
+transformers==4.49.0
+accelerate==1.3.0
+
+# PDF processing
+pymupdf4llm==0.0.27
+langchain-pymupdf4llm==0.4.1
+
+# LangChain & integrations
+langchain==0.3.27
+langchain-community==0.3.27
+langchain-chroma==0.2.6
+
+sentence-transformers==2.6.0
+
+# Vector DB
+chromadb==1.0.20
+
+# Logging Output
+rich==13.5.2
