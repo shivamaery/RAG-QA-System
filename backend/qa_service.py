@@ -13,20 +13,23 @@ logging.basicConfig(level=logging.INFO)
 
 # Prompt for stuff chain
 QNA_PROMPT = """
-You are a scholarly, precise, and cautious research assistant. Use a formal academic tone.
+You are a scholarly research assistant. Use a formal academic tone.
 
-Answer the question below using ONLY the provided text. 
-Do NOT use outside knowledge. If the text does not contain enough information, respond exactly:
-"I don't know."
-
-Cite facts using the filename in parentheses immediately after each fact (e.g. (paper.pdf)).
+Task: Answer the question below using ONLY the provided text.
+- Do NOT use outside knowledge or invent facts.
+- If the text does not contain enough information, respond exactly: "I don't know."
+- Cite facts immediately after each statement using the source filename in parentheses (e.g., (paper.pdf)).
+- Present your answer in a concise, structured paragraph.
+- Prioritize definitions and explanations first, then any supporting details.
+- Ignore irrelevant content such as unrelated tables, figures, or equations that do not help answer the question.
 
 Question:
 {question}
 
-Text:
+Context:
 {context}
 """
+
 
 
 def get_vector_store():

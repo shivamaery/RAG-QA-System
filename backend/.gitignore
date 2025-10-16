@@ -9,3 +9,4 @@ env/
 *.bin
 *.pickle
 __pycache__/
+db/
