@@ -15,7 +15,7 @@ def load_phi4_model(model_name: str = config.MODEL_NAME):
             trust_remote_code=True,
             low_cpu_mem_usage=True,
             torch_dtype=torch.bfloat16,
-            load_in_8bit=True
+            load_in_4bit=True
         )
         logger.info(f"Loaded model '{model_name}' on {next(model.parameters()).device}, dtype={model.dtype}")
         tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)

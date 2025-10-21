@@ -5,7 +5,7 @@ from typing import List
 import re
 import uuid
 import unicodedata
-from langchain.text_splitter import MarkdownTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_chroma import Chroma
@@ -26,14 +26,8 @@ def clean_text(text: str) -> str:
     - Normalize whitespace
     - Remove common page numbers
     """
-    # Normalize unicode
     text = unicodedata.normalize("NFKC", text)
-    # Remove common headers / footers
-    text = re.sub(r"Page\s*\d+(\s*of\s*\d+)?", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"(?m)^(?:[A-Z][A-Za-z\s,&\-:]{5,100})\s*$", "", text)
-    # Fix hyphenation at line breaks
-    text = re.sub(r"(\w)-\s+(\w)", r"\1\2", text)
-    # Fix whitespace
+    text = re.sub(r"Page\s*\d+(\s*of\s*\d+)?", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
@@ -62,11 +56,22 @@ def split_documents(docs):
     """
     Split documents into semantic chunks with overlap.
     """
-    splitter = MarkdownTextSplitter(
+    splitter = RecursiveCharacterTextSplitter(
         chunk_size=config.CHUNK_SIZE,
         chunk_overlap=config.CHUNK_OVERLAP,
     )
-    return splitter.split_documents(docs)
+
+    all_chunks = []
+    for doc in docs:
+        # Split and preserve metadata
+        chunks = splitter.split_text(doc.page_content)
+        for i, chunk in enumerate(chunks):
+            chunk_doc = doc.__class__(
+                page_content=chunk,
+                metadata={**doc.metadata, "chunk_index": i}
+            )
+            all_chunks.append(chunk_doc)
+    return all_chunks
 
 
 def create_or_get_chroma_collection(client: chromadb.Client, name: str):

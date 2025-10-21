@@ -5,6 +5,8 @@ from langchain.prompts import ChatPromptTemplate
 import chromadb
 from langchain_chroma import Chroma
 from langchain.chains.combine_documents.map_reduce import MapReduceDocumentsChain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 import config
 
@@ -47,15 +49,13 @@ def build_retrieval_qa(llm, k: int = None):
     )
     
 
+    # Create the RetrievalQA chain
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=retriever,
-        return_source_documents=True,
         chain_type="stuff",
-        chain_type_kwargs={
-            "prompt" : QNA_PROMPT,
-        
-        }
+        chain_type_kwargs={"prompt": QNA_PROMPT},
+        return_source_documents=True
     )
     logger.info("Initialized RetrievalQA chain successfully.")
     return qa_chain

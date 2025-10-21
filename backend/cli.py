@@ -54,7 +54,6 @@ def main():
         result = qa(args.query)
         answer = result.get("result") or result.get("answer")
         sources = result.get("source_documents", [])
-
         print_result(args.query, answer, sources)
 
     else:
