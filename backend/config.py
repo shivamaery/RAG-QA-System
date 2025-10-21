@@ -11,7 +11,7 @@ MODEL_NAME = os.getenv("MODEL_NAME", "microsoft/Phi-4-mini-instruct")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-mpnet-base-v2")
 
 # Chunking (optimized for retrieval with Phi-3 Mini)
-CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 1000))     
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 800))     
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", 150)) 
 
 # Generation config
@@ -24,7 +24,7 @@ MAX_NEW_TOKENS = int(os.getenv("MAX_NEW_TOKENS", 512))
 CHROMA_PERSIST_DIR = str(CHROMA_DB_DIR)
 
 # Retrieval
-NUM_RETRIEVE = int(os.getenv("NUM_RETRIEVE", 7))
+NUM_RETRIEVE = int(os.getenv("NUM_RETRIEVE", 4))
 
 # Deterministic Results
 DO_SAMPLE = False

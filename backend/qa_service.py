@@ -1,7 +1,7 @@
 # qa_service.py
 import logging
 from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate
 import chromadb
 from langchain_chroma import Chroma
 from langchain.chains.combine_documents.map_reduce import MapReduceDocumentsChain
@@ -12,23 +12,17 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # Prompt for stuff chain
-QNA_PROMPT = """
-You are a scholarly research assistant. Use a formal academic tone.
-
-Task: Answer the question below using ONLY the provided text.
-- Do NOT use outside knowledge or invent facts.
-- If the text does not contain enough information, respond exactly: "I don't know."
-- Cite facts immediately after each statement using the source filename in parentheses (e.g., (paper.pdf)).
-- Present your answer in a concise, structured paragraph.
-- Prioritize definitions and explanations first, then any supporting details.
-- Ignore irrelevant content such as unrelated tables, figures, or equations that do not help answer the question.
-
-Question:
-{question}
-
-Context:
-{context}
-"""
+QNA_PROMPT = ChatPromptTemplate.from_messages([
+    ("system",
+     "You are a scholarly research assistant. Use a formal academic tone. "
+     "Answer the user’s questions based only on the provided context, "
+     "and cite the filenames of the source documents used."),
+    ("user",
+     "Use the following context to answer the question. "
+     "Do NOT include text that is not supported by the context.\n\n"
+     "Context:\n{context}\n\nQuestion:\n{question}\n\n"
+     "Provide a clear, concise answer.")
+])
 
 
 
@@ -52,11 +46,6 @@ def build_retrieval_qa(llm, k: int = None):
         }
     )
     
-    prompt = PromptTemplate(
-        template=QNA_PROMPT,
-        input_variables=["context", "question"]
-    )
-
 
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
@@ -64,7 +53,8 @@ def build_retrieval_qa(llm, k: int = None):
         return_source_documents=True,
         chain_type="stuff",
         chain_type_kwargs={
-            "prompt" : prompt
+            "prompt" : QNA_PROMPT,
+        
         }
     )
     logger.info("Initialized RetrievalQA chain successfully.")

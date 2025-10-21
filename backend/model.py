@@ -2,7 +2,7 @@
 import logging
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain_community.llms import HuggingFacePipeline
-import config
+import config, torch
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -14,6 +14,8 @@ def load_phi4_model(model_name: str = config.MODEL_NAME):
             device_map="auto",
             trust_remote_code=True,
             low_cpu_mem_usage=True,
+            torch_dtype=torch.bfloat16,
+            load_in_8bit=True
         )
         logger.info(f"Loaded model '{model_name}' on {next(model.parameters()).device}, dtype={model.dtype}")
         tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
