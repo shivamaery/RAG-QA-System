@@ -28,7 +28,9 @@ def clean_text(text: str) -> str:
     """
     text = unicodedata.normalize("NFKC", text)
     text = re.sub(r"Page\s*\d+(\s*of\s*\d+)?", " ", text)
+    text = re.sub(r"[\[\]{}*~^_]+", " ", text)
     text = re.sub(r"\s+", " ", text)
+    text = re.sub(r'^(.*?)(?:Chapter|Section).*$', '', text, flags=re.MULTILINE)
     return text.strip()
 
 def list_pdfs(path: Path) -> List[Path]:

@@ -44,7 +44,7 @@ def build_retrieval_qa(llm, k: int = None):
         search_kwargs={
             "k": k or config.NUM_RETRIEVE,
             "fetch_k": 10 * (k or config.NUM_RETRIEVE),
-            "lambda_mult": 0.5
+            "lambda_mult": 0
         }
     )
     
