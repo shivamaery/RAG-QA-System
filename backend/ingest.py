@@ -27,10 +27,10 @@ def clean_text(text: str) -> str:
     - Remove common page numbers
     """
     text = unicodedata.normalize("NFKC", text)
-    text = re.sub(r"Page\s*\d+(\s*of\s*\d+)?", " ", text)
+    text = re.sub(r"Page\s*\d+(\s*of\s*\d+)?", " ",  text, flags=re.IGNORECASE)
     text = re.sub(r"[\[\]{}*~^_]+", " ", text)
     text = re.sub(r"\s+", " ", text)
-    text = re.sub(r'^(.*?)(?:Chapter|Section).*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r"(?m)^\s*(Chapter|Section)\b.*$", "", text)
     return text.strip()
 
 def list_pdfs(path: Path) -> List[Path]:
