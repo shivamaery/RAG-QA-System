@@ -24,10 +24,10 @@ MAX_NEW_TOKENS = int(os.getenv("MAX_NEW_TOKENS", 512))
 CHROMA_PERSIST_DIR = str(CHROMA_DB_DIR)
 
 # Retrieval
-NUM_RETRIEVE = int(os.getenv("NUM_RETRIEVE", 4))
+NUM_RETRIEVE = int(os.getenv("NUM_RETRIEVE", 5))
 
 # Deterministic Results
-DO_SAMPLE = False
+DO_SAMPLE = True
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
