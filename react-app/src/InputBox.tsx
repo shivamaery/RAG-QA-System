@@ -6,9 +6,6 @@ function InputBox(): JSX.Element {
   const [chat, setChat] = useState<{ sender: string; text: string }[]>([]);
 
   const getFakeAIResponse = (userInput: string): string => {
-    if (userInput.toLowerCase().includes("transformer")) {
-      return "Here’s a classic: *Attention Is All You Need* — the Transformer paper.";
-    }
     return `You said: "${userInput}". `;
   };
 
@@ -21,16 +18,19 @@ function InputBox(): JSX.Element {
     setChat((prevChat) => [...prevChat, { sender: "user", text: inputVal }]);
     setInputVal("");
 
-    // const aiMsg = { sender: "AI", text: getFakeAIResponse(inputVal) };
-    // setChat((prevChat) => [...prevChat, aiMsg]);
+    const aiMsg = { sender: "AI", text: getFakeAIResponse(inputVal) };
+    setChat((prevChat) => [...prevChat, aiMsg]);
   };
 
   return (
     <div>
       <h1>ResearchAI</h1>
-      {chat.map((msg, index) => (
-        <Chat key={index} sender={msg.sender} text={msg.text} />
-      ))}
+
+      <div className="chat-window">
+        {chat.map((msg, i) => (
+          <Chat key={i} sender={msg.sender} text={msg.text} />
+        ))}
+      </div>
 
       <form onSubmit={handleEnter}>
         <input

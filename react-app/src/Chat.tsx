@@ -6,10 +6,11 @@ interface MessageProps {
 }
 
 const Chat: React.FC<MessageProps> = ({ sender, text }) => {
+  const isUser = sender.toLowerCase() === "user";
   return (
-    <p>
-      <strong>{sender}:</strong> {text}
-    </p>
+    <div className={`row ${isUser ? "right" : "left"}`}>
+      <div className={`bubble ${isUser ? "user" : "ai"}`}>{text}</div>
+    </div>
   );
 };
 
