@@ -1,11 +1,15 @@
-.input-field {
-    margin-top: 10px;
-    margin-left: 400px;
-    font-size: 16px;
+form {
     width: 400px;
+    margin: 8px auto;
+    display: flex; /* to put input box and button on the same line */
+}
+
+.input-field {
+    width: 85%;
     height: 30px;
     border: 1px solid #ccc;
     border-radius: 6px;
+    font-size: 16px;
 }
 
 .submit-btn {
@@ -17,6 +21,14 @@
     color: white;
     border-radius: 6px;
     cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.row {
+    display: flex;
 }
 
 .bubble {
@@ -32,15 +44,12 @@
 .bubble.user {
     background: #2b6fff;
     color: white;
-    /* margin-right: auto; */
-    align-self: flex-start; 
 }
 
 .bubble.ai {
     background: #eeeeee;
     color: #222;
-    align-self: flex-end;
-    /* margin-left: auto; */
+    margin-left: auto;
 }
 
 .chat-window {
@@ -49,12 +58,25 @@
     border-radius: 12px;
     background: #ffffff;
 
-    max-width: 1300px; /*how wide the frame is */
+    max-width: 1000px; /*how wide the frame is */
     margin: 0 auto; /*centers frame*/
 
     /* window */
-    height: 60vh;
+    height: 70vh;
     overflow-y: auto;
     padding: 12px;
+}
+
+body {
+    background-color: #f0f4fa;
+    margin: 0;
+    font-family: sans-serif;
+}
+
+.header {
+    color: #2b6fff;
+    background-color: #e6edff;
+    padding: 12px;
+    text-align: center;
 }
 

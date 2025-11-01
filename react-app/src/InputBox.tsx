@@ -24,7 +24,7 @@ function InputBox(): JSX.Element {
 
   return (
     <div>
-      <h1>ResearchAI</h1>
+      <h1 className="header">ResearchAI</h1>
 
       <div className="chat-window">
         {chat.map((msg, i) => (
@@ -41,7 +41,7 @@ function InputBox(): JSX.Element {
           placeholder=" How can I help you?"
         />
         <button type="submit" className="submit-btn">
-          ^
+          &#x2794;
         </button>
       </form>
     </div>
