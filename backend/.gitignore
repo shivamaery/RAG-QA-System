@@ -1,0 +1,12 @@
+index_storage/
+data/test_data
+LoRA-Tuning-output/
+LoRA-logs/
+.venv/
+venv/
+env/
+*.pyc
+*.bin
+*.pickle
+__pycache__/
+db/
