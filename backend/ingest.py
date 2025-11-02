@@ -9,6 +9,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_chroma import Chroma
+from langchain_community.document_loaders import UnstructuredPDFLoader
 import chromadb
 
 import config
@@ -44,7 +45,7 @@ def load_documents(pdf_paths: List[Path]):
     """
     docs = []
     for p in pdf_paths:
-        loader = PyMuPDF4LLMLoader(str(p), mode="single", table_strategy="lines_strict")
+        loader = UnstructuredPDFLoader(str(p))
         raw_docs = loader.load()
         for doc in raw_docs:
             doc.page_content = clean_text(doc.page_content)
