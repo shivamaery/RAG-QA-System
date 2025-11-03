@@ -9,3 +9,5 @@ chromadb==1.0.20
 rich==13.5.2
 unstructured==0.7.7
 KeyBERT
+fastapi
+semantic_text_splitter

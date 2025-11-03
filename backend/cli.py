@@ -7,7 +7,6 @@ from qa_service import build_retrieval_qa
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from keybert import KeyBERT
 import config
  
 # Create a single console instance
@@ -51,10 +50,8 @@ def main():
         return
 
     if args.query:
-        kw_model = KeyBERT('sentence-transformers/all-mpnet-base-v2')
-        keywords = kw_model.extract_keywords(args.query, top_n=5)
         _, _, llm = load_phi4_model()
-        qa = build_retrieval_qa(llm=llm, k=config.NUM_RETRIEVE, keywords=keywords)
+        qa = build_retrieval_qa(llm=llm, k=config.NUM_RETRIEVE)
         result = qa(args.query)
         answer = result.get("output_text") or result.get("answer") or result.get("result")
         sources = result.get("source_documents", [])

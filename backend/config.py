@@ -7,7 +7,7 @@ CHROMA_DB_DIR = BASE_DIR / "db" / "chroma"
 CHROMA_COLLECTION_NAME = "dal_theses"
 
 # Model / LLM / embedding settings
-MODEL_NAME = os.getenv("MODEL_NAME", "microsoft/Phi-3-medium-128k-instruct")
+MODEL_NAME = os.getenv("MODEL_NAME", "microsoft/Phi-3-medium-4k-instruct")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-mpnet-base-v2")
 
 # Chunking (optimized for retrieval with Phi-3 Mini)
@@ -24,7 +24,7 @@ MAX_NEW_TOKENS = int(os.getenv("MAX_NEW_TOKENS", 512))
 CHROMA_PERSIST_DIR = str(CHROMA_DB_DIR)
 
 # Retrieval
-NUM_RETRIEVE = int(os.getenv("NUM_RETRIEVE", 5))
+NUM_RETRIEVE = int(os.getenv("NUM_RETRIEVE", 3))
 
 # Deterministic Results
 DO_SAMPLE = True

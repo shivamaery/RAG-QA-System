@@ -82,13 +82,12 @@ class MapReduceQAWrapper:
         }
 
 # --- Build the retrieval QA ---
-def build_retrieval_qa(llm, keywords, k: int = None,):
+def build_retrieval_qa(llm, k: int = None):
     vector_store = get_vector_store()
     retriever = vector_store.as_retriever(
-         search_type="hybrid",
+         search_type="mmr",
         search_kwargs={
-            "k": k,
-            "query_text": keywords,  
+            "k": k, "lambda_mult": 0.5
         }
     )
 
@@ -103,7 +102,7 @@ def build_retrieval_qa(llm, keywords, k: int = None,):
 
     reduce_documents_chain = ReduceDocumentsChain(
         combine_documents_chain=combine_documents_chain,
-        token_max=1000
+        token_max=2000
     )
 
     map_reduce_chain = MapReduceDocumentsChain(
