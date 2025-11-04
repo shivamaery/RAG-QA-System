@@ -5,10 +5,13 @@ from typing import List
 import re
 import uuid
 import unicodedata
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from semantic_text_splitter import TextSplitter
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_chroma import Chroma
+from langchain_experimental.text_splitter import SemanticChunker
+from langchain.schema import Document
+from langchain_community.document_loaders import UnstructuredPDFLoader
 import chromadb
 
 import config
@@ -44,7 +47,7 @@ def load_documents(pdf_paths: List[Path]):
     """
     docs = []
     for p in pdf_paths:
-        loader = PyMuPDF4LLMLoader(str(p), mode="single", table_strategy="lines_strict")
+        loader = UnstructuredPDFLoader(str(p))
         raw_docs = loader.load()
         for doc in raw_docs:
             doc.page_content = clean_text(doc.page_content)
@@ -58,10 +61,8 @@ def split_documents(docs):
     """
     Split documents into semantic chunks with overlap.
     """
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=config.CHUNK_SIZE,
-        chunk_overlap=config.CHUNK_OVERLAP,
-    )
+    embeddings = SentenceTransformerEmbeddings(model_name=config.EMBEDDING_MODEL)
+    splitter = SemanticChunker(embeddings=embeddings, buffer_size=3)
 
     all_chunks = []
     for doc in docs:
