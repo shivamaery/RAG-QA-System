@@ -55,7 +55,7 @@ def main():
         result = qa(args.query)
         answer = result.get("output_text") or result.get("answer") or result.get("result")
         sources = result.get("source_documents", [])
-        print_result(args.query, answer, sources)
+        print_result(args.query, answer['output_text'], sources)
 
     else:
         parser.print_help()

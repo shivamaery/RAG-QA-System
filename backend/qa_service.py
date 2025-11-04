@@ -15,38 +15,55 @@ logging.basicConfig(level=logging.INFO)
 
 # --- Map Prompt ---
 map_prompt = PromptTemplate.from_template(
-    """You are a scholarly research assistant.
-Use only the provided context to answer the question accurately and concisely (max 150 tokens).
+    """System:    
+You are a technical research assistant.
+Use only the information in the provided context to answer the question.
+Never use outside knowledge or assumptions.
+Be concise and factual.
 
-Context chunk:
+User:
+Context:
 {context}
 
 Question:
 {question}
 
 Instructions:
-- If the context contains relevant information, summarize it clearly.
-- Include any explicit references to papers, authors, or sections if mentioned.
-- If the context does not contain relevant information, respond exactly: "No relevant info".
+1. If the context directly or partially answers the question, summarize the relevant details clearly (max 150 tokens).
+2. If it only provides background or context, summarize how it relates.
+3. If it is unrelated, respond exactly: NO RELEVANT INFO.
 
-Answer:"""
+Assistant:
+Summary: <text>
+"""
 )
 
 # --- Reduce Prompt ---
 reduce_prompt = PromptTemplate.from_template(
-    """You are a scholarly research assistant. You have been provided with partial answers from different context chunks:
+    """System:
+You are a technical research assistant combining multiple partial answers.
+Use only the provided summaries and their sources.
+Never add information or citations that are not explicitly provided.
+Produce one concise, accurate, and well-attributed answer.
+
+User:
+Partial answers (each may include its source document name or author):
 {partial_answers}
 
 Question:
 {question}
 
 Instructions:
-- Combine the partial answers into a single, coherent, and concise answer.
-- Cite the filenames of the source documents where information was found.
-- Do not include information not present in the provided context.
-- If none of the partial answers contain relevant information, respond exactly: "No relevant info".
+1. Ignore any entries that read exactly “NO RELEVANT INFO.”
+2. If none remain, respond exactly: NO RELEVANT INFO.
+3. Otherwise:
+   - Merge the remaining summaries into a single coherent answer (max 150 tokens).
+   - Attribute each distinct piece of information to its source document or author if mentioned.
+   - If multiple summaries agree on the same point, you may list multiple sources together.
+4. Do not fabricate sources or cite documents not listed in the partial answers.
 
-Final Answer:"""
+Assistant:
+Final Answer: <text>"""
 )
 
 
@@ -85,9 +102,9 @@ class MapReduceQAWrapper:
 def build_retrieval_qa(llm, k: int = None):
     vector_store = get_vector_store()
     retriever = vector_store.as_retriever(
-         search_type="mmr",
+         search_type="similarity",
         search_kwargs={
-            "k": k, "lambda_mult": 0.5
+            "k": k
         }
     )
 
