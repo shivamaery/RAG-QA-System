@@ -56,18 +56,10 @@ class QueryResponse(BaseModel):
 async def query_endpoint(req: QueryRequest):
     try:
         result = qa_chain(req.question)
-
-        # Temporary solution to print the whole returned answer if not a string.
-        raw_answer = result.get("result") or result.get("answer")
-        if isinstance(raw_answer, dict):
-            # Extract text from dict or convert to string
-            answer = str(raw_answer.get("text", raw_answer))
-        else:
-            answer = str(raw_answer)
-
+        answer = result.get("output_text") or result.get("answer") or result.get("result")
         sources = [str(doc.metadata.get("source", "unknown")) for doc in result.get("source_documents", [])]
 
-        return QueryResponse(answer=answer, sources=sources)
+        return QueryResponse(answer=answer['output_text'], sources=sources)
 
     except Exception as e:
         logger.exception("Error while processing query: %s", e)
