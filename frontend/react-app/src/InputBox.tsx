@@ -43,8 +43,6 @@ function InputBox(): JSX.Element {
 
   return (
     <div>
-      <h1 className="header">ResearchAI</h1>
-
       <div className="chat-window">
         {chat.map((msg, i) => (
           <Chat key={i} sender={msg.sender} text={msg.text} />
