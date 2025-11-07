@@ -32,22 +32,17 @@ map_prompt = ChatPromptTemplate.from_messages([
 
 # --- Reduce Prompt ---
 reduce_prompt = ChatPromptTemplate.from_messages([
-    ("system",
-     "You are a technical research assistant combining multiple partial answers (with sources). "
-     "Use only the provided summaries and their sources. "
-     "You may not add or infer any information not explicitly present in the summaries or citations. "
-     "Produce one coherent answer."),
+     ("system",
+     "You are a precise technical summarizer. Use only the provided summaries."),
     ("user",
      "Partial answers (each with its source):\n{partial_answers}\n\n"
      "Question:\n{question}\n\n"
      "Instructions:\n"
-     "1. Discard any entries that are exactly “NO RELEVANT INFO.”\n"
-     "2. If none remain, respond exactly: NO RELEVANT INFO.\n"
-     "3. Otherwise:\n"
-     "   - Merge the remaining summaries into a single coherent answer (max 150 tokens).\n"
-     "   - For each distinct fact, include a clear attribution to its source.\n"
-     "   - If two or more summaries provide the same fact, you may list all applicable sources together.\n"
-     "   - Do not fabricate or cite any new sources.\n\nAssistant:\nFinal Answer:")
+     "1. Discard any entries that are 'NO RELEVANT INFO.'\n"
+     "2. Choose the most relevant and complete answer that directly addresses the question.\n"
+     "3. If multiple are similar, merge minimally while preserving factual clarity.\n"
+     "4. If none directly answer, respond exactly: NO RELEVANT INFO.\n\n"
+     "Final Answer:")
 ])
 
 
