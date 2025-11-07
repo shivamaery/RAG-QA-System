@@ -3,10 +3,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import logging
-import uvicorn
 
 from model import load_phi4_model
 from qa_service import build_retrieval_qa
+import config
 
 # Creating app object
 app = FastAPI()
@@ -29,11 +29,18 @@ app.add_middleware(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load model and QA chain at startup
-logger.info("Loading model and QA chain...")
-_, _, llm = load_phi4_model()
-qa_chain = build_retrieval_qa(llm)
-logger.info("Model and retrieval QA chain ready.")
+# Globals
+llm = None
+qa_chain = None
+
+# Load model on startup
+@app.on_event("startup")
+async def startup_event():
+    global llm, qa_chain
+    logger.info("Loading model and QA chain...")
+    _, _, llm = load_phi4_model()
+    qa_chain = build_retrieval_qa(llm, k=config.NUM_RETRIEVE)
+    logger.info("Model and retrieval QA chain ready.")
 
 # Request/Response models
 class QueryRequest(BaseModel):
@@ -49,10 +56,10 @@ class QueryResponse(BaseModel):
 async def query_endpoint(req: QueryRequest):
     try:
         result = qa_chain(req.question)
-        answer = result.get("result") or result.get("answer")
-        sources = [doc.metadata.get("source", "unknown") for doc in result.get("source_documents", [])]
+        answer = result.get("output_text") or result.get("answer") or result.get("result")
+        sources = [str(doc.metadata.get("source", "unknown")) for doc in result.get("source_documents", [])]
 
-        return QueryResponse(answer=answer, sources=sources)
+        return QueryResponse(answer=answer['output_text'], sources=sources)
 
     except Exception as e:
         logger.exception("Error while processing query: %s", e)
@@ -61,4 +68,5 @@ async def query_endpoint(req: QueryRequest):
 # Entrypoint to run the FastAPI backend
 # Check if frontend isnt running on the same port
 if __name__ == "__main__":
-    uvicorn.run("api:app", host="127.0.0.1", port=8000, reload=True)
+    import uvicorn
+    uvicorn.run("api:app", host="127.0.0.1", port=8000)
