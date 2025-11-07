@@ -9,7 +9,7 @@ from semantic_text_splitter import TextSplitter
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_chroma import Chroma
-from langchain_experimental.text_splitter import SemanticChunker
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from langchain_community.document_loaders import UnstructuredPDFLoader
 import chromadb
@@ -61,19 +61,19 @@ def split_documents(docs):
     """
     Split documents into semantic chunks with overlap.
     """
-    embeddings = SentenceTransformerEmbeddings(model_name=config.EMBEDDING_MODEL)
-    splitter = SemanticChunker(embeddings=embeddings, buffer_size=3)
+    splitter = RecursiveCharacterTextSplitter(
+    chunk_size=config.CHUNK_SIZE,
+    chunk_overlap=config.CHUNK_OVERLAP,
+    separators=["\n\n", "\n", ".", " ", ""]
+)
 
     all_chunks = []
     for doc in docs:
         # Split and preserve metadata
-        chunks = splitter.split_text(doc.page_content)
+        chunks = splitter.split_documents([doc])
         for i, chunk in enumerate(chunks):
-            chunk_doc = doc.__class__(
-                page_content=chunk,
-                metadata={**doc.metadata, "chunk_index": i}
-            )
-            all_chunks.append(chunk_doc)
+            chunk.metadata["chunk_index"] = i
+            all_chunks.append(chunk)
     return all_chunks
 
 

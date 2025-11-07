@@ -4,6 +4,7 @@ from langchain.chains import LLMChain, RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain_chroma import Chroma
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
+from langchain_core.prompts.chat import ChatPromptTemplate
 from langchain.chains.combine_documents.map_reduce import MapReduceDocumentsChain
 from langchain.chains.combine_documents.reduce import ReduceDocumentsChain
 from langchain_community.embeddings import SentenceTransformerEmbeddings
@@ -14,57 +15,40 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # --- Map Prompt ---
-map_prompt = PromptTemplate.from_template(
-    """System:    
-You are a technical research assistant.
-Use only the information in the provided context to answer the question.
-Never use outside knowledge or assumptions.
-Be concise and factual.
-
-User:
-Context:
-{context}
-
-Question:
-{question}
-
-Instructions:
-1. If the context directly or partially answers the question, summarize the relevant details clearly (max 150 tokens).
-2. If it only provides background or context, summarize how it relates.
-3. If it is unrelated, respond exactly: NO RELEVANT INFO.
-
-Assistant:
-Summary: <text>
-"""
-)
+map_prompt = ChatPromptTemplate.from_messages([
+    ("system",
+     "You are a technical research assistant. "
+     "You must use **only** the information in the provided context to answer the question. "
+     "You **cannot** use outside knowledge, assumptions, or hallucinate facts. "
+     "If the context does not provide any relevant information, respond exactly: NO RELEVANT INFO."),
+    ("user",
+     "Context:\n{doc_text}\n\nQuestion:\n{question}\n\n"
+     "Instructions:\n"
+     "1. If the context directly answers the question, summarize the answer clearly (max 150 tokens).\n"
+     "2. If the context does not answer the question but provides background or related information, "
+     "summarize how the context relates to the question (max 150 tokens).\n"
+     "3. If the context is unrelated, respond exactly: NO RELEVANT INFO.\n\nAssistant:\nSummary:")
+])
 
 # --- Reduce Prompt ---
-reduce_prompt = PromptTemplate.from_template(
-    """System:
-You are a technical research assistant combining multiple partial answers.
-Use only the provided summaries and their sources.
-Never add information or citations that are not explicitly provided.
-Produce one concise, accurate, and well-attributed answer.
-
-User:
-Partial answers (each may include its source document name or author):
-{partial_answers}
-
-Question:
-{question}
-
-Instructions:
-1. Ignore any entries that read exactly “NO RELEVANT INFO.”
-2. If none remain, respond exactly: NO RELEVANT INFO.
-3. Otherwise:
-   - Merge the remaining summaries into a single coherent answer (max 150 tokens).
-   - Attribute each distinct piece of information to its source document or author if mentioned.
-   - If multiple summaries agree on the same point, you may list multiple sources together.
-4. Do not fabricate sources or cite documents not listed in the partial answers.
-
-Assistant:
-Final Answer: <text>"""
-)
+reduce_prompt = ChatPromptTemplate.from_messages([
+    ("system",
+     "You are a technical research assistant combining multiple partial answers (with sources). "
+     "Use only the provided summaries and their sources. "
+     "You may not add or infer any information not explicitly present in the summaries or citations. "
+     "Produce one coherent answer."),
+    ("user",
+     "Partial answers (each with its source):\n{partial_answers}\n\n"
+     "Question:\n{question}\n\n"
+     "Instructions:\n"
+     "1. Discard any entries that are exactly “NO RELEVANT INFO.”\n"
+     "2. If none remain, respond exactly: NO RELEVANT INFO.\n"
+     "3. Otherwise:\n"
+     "   - Merge the remaining summaries into a single coherent answer (max 150 tokens).\n"
+     "   - For each distinct fact, include a clear attribution to its source.\n"
+     "   - If two or more summaries provide the same fact, you may list all applicable sources together.\n"
+     "   - Do not fabricate or cite any new sources.\n\nAssistant:\nFinal Answer:")
+])
 
 
 # --- Vector store ---
@@ -125,7 +109,7 @@ def build_retrieval_qa(llm, k: int = None):
     map_reduce_chain = MapReduceDocumentsChain(
         llm_chain=map_chain,
         reduce_documents_chain=reduce_documents_chain,
-        document_variable_name="context"
+        document_variable_name="doc_text"
     )
 
     logger.info("Initialized Map-Reduce RetrievalQA chain successfully.")
