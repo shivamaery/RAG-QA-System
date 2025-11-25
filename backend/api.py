@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import logging
+import re
 
 from model import load_phi4_model
 from qa_service import build_retrieval_qa
@@ -50,6 +51,13 @@ class QueryResponse(BaseModel):
     answer: str
     sources: list[str]
 
+def clean_answer_text(text: str) -> str:
+    match = re.search(r'final answer:\s*(.*)', text, re.IGNORECASE | re.DOTALL)
+    if match:
+        after = match.group(1)
+        paragraph = after.split('\n', 1)[0].strip()
+        return paragraph
+    return text.strip()
 
 # Using post in order to send the query and get the answer
 @app.post("/query", response_model=QueryResponse)
@@ -59,7 +67,9 @@ async def query_endpoint(req: QueryRequest):
         answer = result.get("output_text") or result.get("answer") or result.get("result")
         sources = [str(doc.metadata.get("source", "unknown")) for doc in result.get("source_documents", [])]
 
-        return QueryResponse(answer=answer['output_text'], sources=sources)
+        clean_answer = clean_answer_text(answer['output_text'])
+
+        return QueryResponse(answer=clean_answer, sources=sources)
 
     except Exception as e:
         logger.exception("Error while processing query: %s", e)
