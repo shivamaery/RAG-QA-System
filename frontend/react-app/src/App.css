@@ -10,7 +10,7 @@ form {
 .input-field {
     width: 95%;
     height: 40px;
-    border: 2px solid #e2e2e2;
+    border: 2px solid #c1c1c1;
     border-radius: 12px;
     font-size: 16px;
 }
@@ -58,7 +58,7 @@ form {
 
 .chat-window {
     /* frame */
-    border: 2px solid #e2e2e2;
+    border: 2px solid #c1c1c1;
     border-radius: 12px;
     background: #ffffff;
 
@@ -75,7 +75,9 @@ form {
 }
 
 body {
-    background-color: #f0f4fa;
+    height: 100%;
+    background: linear-gradient(0deg, #9cbce3, #ffffff);
+    background-attachment: fixed;
     margin: 0;
     font-family: sans-serif;
 }
