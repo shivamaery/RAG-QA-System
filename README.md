@@ -6,7 +6,7 @@ A full-stack **Retrieval-Augmented Generation (RAG)** based question-answering s
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Intelligent Document Retrieval**: Semantic search using sentence transformers and vector embeddings
 - **RAG-Based QA**: Combines document retrieval with large language model inference for accurate, context-aware answers
@@ -19,7 +19,7 @@ A full-stack **Retrieval-Augmented Generation (RAG)** based question-answering s
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
@@ -31,7 +31,7 @@ A full-stack **Retrieval-Augmented Generation (RAG)** based question-answering s
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 The system follows a **client-server architecture** with clear separation of concerns:
 
@@ -68,7 +68,7 @@ The system follows a **client-server architecture** with clear separation of con
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 - **Framework**: FastAPI (Python web framework)
@@ -93,7 +93,7 @@ The system follows a **client-server architecture** with clear separation of con
 
 ---
 
-## 📦 Prerequisites
+## Prerequisites
 
 ### System Requirements
 - **OS**: Linux, macOS, or Windows
@@ -108,7 +108,7 @@ The system follows a **client-server architecture** with clear separation of con
 
 ---
 
-## 🔧 Installation & Setup
+## Installation & Setup
 
 ### Step 1: Clone the Repository
 
@@ -180,7 +180,7 @@ The frontend will be available at `http://localhost:5173` (Vite default)
 
 ---
 
-## � Screenshots
+## Screenshots
 
 ### Application Demo
 
@@ -188,7 +188,7 @@ The frontend will be available at `http://localhost:5173` (Vite default)
 
 ---
 
-## �📂 Project Structure
+## Project Structure
 
 ```
 RAG-QA-System/
@@ -227,7 +227,7 @@ RAG-QA-System/
 
 ---
 
-## 📖 Usage
+## Usage
 
 ### Chat Interface
 
@@ -253,7 +253,7 @@ python cli.py query "Your question here"
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 All configuration settings are in [backend/config.py](backend/config.py). Key parameters:
 
